@@ -1,0 +1,30 @@
+export const SUPPORTED_LANGUAGES = [
+  "cpp",
+  "go",
+  "java",
+  "js",
+  "ts",
+  "jsx",
+  "tsx",
+  "php",
+  "proto",
+  "python",
+  "rst",
+  "ruby",
+  "rust",
+  "scala",
+  "swift",
+  "markdown",
+  "latex",
+  "html",
+  "sol",
+  "pdf",
+];
+
+export const IGNORED_DIRECTORIES = [
+  "node_modules",
+  ".git",
+  "dist",
+  "out",
+  ".vscode",
+];
