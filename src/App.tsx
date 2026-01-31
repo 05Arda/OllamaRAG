@@ -8,21 +8,12 @@ import Chat from "./components/ChatPage";
 
 function App() {
   const [directory, setDirectory] = useState<FolderNode | null>(null);
-
-  const handleAnalyze = async () => {
-    alert("Hello!");
-    const response = await fetch("http://localhost:3001/api/analyze", {
-      method: "POST",
-    });
-    const data = await response.json();
-    alert(data.message);
-  };
+  const [context, setContenxt] = useState<string>("");
 
   return (
     <div className="container">
       <div className="fileManager">
         <FolderPicker onDirectoryChange={setDirectory} />
-        <button onClick={() => handleAnalyze()}>Test!</button>
 
         {directory ? (
           <FolderTree directory={directory} />
@@ -36,7 +27,7 @@ function App() {
         )}
       </div>
       <div className="chatArea">
-        <Chat />
+        <Chat context={context} />
       </div>
     </div>
   );

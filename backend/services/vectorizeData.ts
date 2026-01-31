@@ -1,6 +1,6 @@
 // services/vectorizeData.ts
 import * as lancedb from "@lancedb/lancedb";
-import { generateEmbedding } from "./ollamaEmbeder";
+import { generateEmbedding } from "./ollamaEmbedder";
 import type { CodeChunk } from "../../src/types/types";
 
 export async function upsertVectorIndex(chunks: CodeChunk[]) {
@@ -16,7 +16,7 @@ export async function upsertVectorIndex(chunks: CodeChunk[]) {
     // Generate embeddings for each chunk in the batch concurrently
     const batchResults = await Promise.all(
       batch.map(async (chunk) => {
-        const embedding = await generateEmbedding({ data: chunk.text });
+        const embedding = await generateEmbedding(chunk.text);
         return { ...chunk, vector: embedding };
       }),
     );

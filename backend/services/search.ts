@@ -1,5 +1,5 @@
 // services/search.ts
-import { generateEmbedding } from "./ollamaEmbeder";
+import { generateEmbedding } from "./ollamaEmbedder";
 import * as lancedb from "@lancedb/lancedb";
 
 export async function searchInEmbeddings(query: string, topK = 3) {
@@ -11,7 +11,7 @@ export async function searchInEmbeddings(query: string, topK = 3) {
     throw new Error("Vector table 'testdata' not found.");
   }
 
-  const queryEmbedding = await generateEmbedding({ data: query });
+  const queryEmbedding = await generateEmbedding(query);
 
   if (!queryEmbedding) {
     throw new Error("Failed to generate embedding for the query.");
@@ -21,6 +21,10 @@ export async function searchInEmbeddings(query: string, topK = 3) {
     .search(queryEmbedding)
     .limit(topK)
     .toArray();
+
+  if (searchResults.length === 0) {
+    console.log("⚠️ No results found.");
+  }
 
   return searchResults;
 }

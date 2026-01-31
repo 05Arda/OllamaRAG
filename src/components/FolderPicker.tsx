@@ -11,6 +11,15 @@ type FolderPickerProps = {
 export default function FolderPicker({ onDirectoryChange }: FolderPickerProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // todo: when added files, trigger analysis automatically
+  const handleAnalyze = async () => {
+    const response = await fetch("http://localhost:3001/api/analyze", {
+      method: "POST",
+    });
+    const data = await response.json();
+    alert(data.message);
+  };
+
   const handleFolderSelect = (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
@@ -58,6 +67,7 @@ export default function FolderPicker({ onDirectoryChange }: FolderPickerProps) {
     }
 
     onDirectoryChange(root);
+    handleAnalyze();
   };
 
   return (

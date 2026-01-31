@@ -1,5 +1,5 @@
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
-import type { CodeChunk } from "../../src/types/types";
+import type { CodeChunk, RawDoc } from "../../src/types/types";
 
 /**
  * Represents a single chunk of code with its metadata.
@@ -9,9 +9,7 @@ import type { CodeChunk } from "../../src/types/types";
  * Splits loaded workspace documents into smaller, manageable chunks for RAG.
  * It attempts to use language-specific splitting rules to preserve code structure.
  */
-export async function splitDocuments(
-  rawDocs: { text: string; path: string }[],
-): Promise<CodeChunk[]> {
+export async function splitDocuments(rawDocs: RawDoc[]): Promise<CodeChunk[]> {
   const allChunks: CodeChunk[] = [];
 
   // Official programming languages supported by LangChain's specialized splitters
