@@ -1,9 +1,8 @@
 import { splitDocuments } from "./splitDocuments";
 import { upsertVectorIndex } from "./vectorizeData";
-import { searchInEmbeddings } from "./search";
 import type { CodeChunk, RawDoc } from "../../src/types/types";
 
-export async function runRAGTest(docs: RawDoc[]) {
+export async function startRAG(docs: RawDoc[]) {
   console.log("🚀 NorthStar Sandbox: RAG Testi Başlıyor...");
   console.time("Total Test Time");
 

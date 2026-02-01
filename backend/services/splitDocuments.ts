@@ -1,6 +1,7 @@
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import type { CodeChunk, RawDoc } from "../../src/types/types";
 
+import { SUPPORTED_LANGUAGES } from "../../src/utils/fileTypes";
 /**
  * Represents a single chunk of code with its metadata.
  */
@@ -11,26 +12,6 @@ import type { CodeChunk, RawDoc } from "../../src/types/types";
  */
 export async function splitDocuments(rawDocs: RawDoc[]): Promise<CodeChunk[]> {
   const allChunks: CodeChunk[] = [];
-
-  // Official programming languages supported by LangChain's specialized splitters
-  const SUPPORTED_LANGUAGES = [
-    "cpp",
-    "go",
-    "java",
-    "js",
-    "php",
-    "proto",
-    "python",
-    "rst",
-    "ruby",
-    "rust",
-    "scala",
-    "swift",
-    "markdown",
-    "latex",
-    "html",
-    "sol",
-  ];
 
   const chunkSize = 1000;
   const chunkOverlap = 150;
@@ -65,7 +46,6 @@ export async function splitDocuments(rawDocs: RawDoc[]): Promise<CodeChunk[]> {
       });
     }
 
-    // Split the document text into an array of strings
     const splitTexts = await splitter.splitText(doc.text);
 
     // Map the split strings back to our CodeChunk interface

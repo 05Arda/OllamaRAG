@@ -19,6 +19,9 @@ export const SUPPORTED_LANGUAGES = [
   "html",
   "sol",
   "pdf",
+  "txt",
+  "json",
+  "xml",
 ];
 
 export const IGNORED_DIRECTORIES = [

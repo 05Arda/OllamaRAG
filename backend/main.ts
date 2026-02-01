@@ -1,11 +1,12 @@
 import express from "express";
 import type { Request, Response } from "express";
 import cors from "cors";
+
 import multer from "multer";
 
 import { intentRouter, generate, generateAnswer } from "./services/ollamaChat";
 import { searchInEmbeddings } from "./services/search";
-import { runRAGTest } from "./services/ragManager";
+import { startRAG } from "./services/ragManager";
 import type { RawDoc } from "../src/types/types";
 
 const app = express();
@@ -13,20 +14,16 @@ app.use(cors());
 app.use(express.json());
 
 const fileToRawDoc = (file: Express.Multer.File): RawDoc => {
-  return { path: file.path, text: file.buffer.toString("utf-8") };
+  return {
+    path: file.originalname,
+    text: file.buffer.toString("utf-8"),
+  };
 };
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Dosyalar 'uploads' klasörüne gidecek
-  },
-  filename: (req, file, cb) => {
-    // Dosya adının çakışmaması için zaman damgası ekliyoruz
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
-
+const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+
+let fileTree = "";
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Backend is running 🚀");
@@ -47,13 +44,14 @@ app.post("/api/chat", async (req: Request, res: Response) => {
 
   try {
     console.log("📥 Chat request received:", messageText);
-    const response = await intentRouter(messageText);
+    const response = await intentRouter(messageText, fileTree);
     console.log("📤 Chat response intent:", response);
 
     let answerStream;
     if (response) {
       // Technical Question Handling
-      const results = await searchInEmbeddings(messageText);
+      const topK = 5;
+      const results = await searchInEmbeddings(messageText, topK);
 
       if (results.length === 0) {
         console.log("⚠️ No results found.");
@@ -62,10 +60,10 @@ app.post("/api/chat", async (req: Request, res: Response) => {
       answerStream = await generateAnswer(
         messageText,
         results.map((r) => r.text).join("\n"),
+        fileTree,
       );
     } else {
-      // General Question Handling
-      answerStream = await generate(messageText);
+      answerStream = await generate(messageText, fileTree);
     }
 
     for await (const chunk of answerStream) {
@@ -84,15 +82,13 @@ app.post("/api/chat", async (req: Request, res: Response) => {
 
 app.post(
   "/api/analyze",
-  upload.array("files"),
-  (req: Request, res: Response) => {
+  upload.array("files", 100),
+  async (req: Request, res: Response) => {
     console.log("📥 Analysis request received...");
-
-    res.setHeader("Content-Type", "text/plain; charset=utf-8");
-    res.setHeader("Transfer-Encoding", "chunked");
 
     try {
       const files = req.files as Express.Multer.File[];
+      fileTree = req.body.fileTree;
 
       if (!files || files.length === 0) {
         return res.status(400).json({ message: "File not uploaded!" });
@@ -100,19 +96,22 @@ app.post(
 
       console.log(`📥 ${files.length} files received.`);
 
-      runRAGTest(files.map(fileToRawDoc));
+      const docs = files.map(fileToRawDoc);
+      await startRAG(docs);
 
-      res.json({
+      return res.status(200).json({
         status: "success",
         message: "Analysis and RAG test completed successfully!",
       });
     } catch (err: any) {
       console.error("❌ Error occurred:", err);
 
-      res.status(500).json({
-        status: "error",
-        error: err.message || "An unknown error occurred.",
-      });
+      if (!res.headersSent) {
+        return res.status(500).json({
+          status: "error",
+          error: err.message || "An unknown error occurred.",
+        });
+      }
     }
   },
 );
