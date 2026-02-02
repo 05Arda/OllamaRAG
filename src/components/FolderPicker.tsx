@@ -39,12 +39,23 @@ export default function FolderPicker({ onDirectoryChange }: FolderPickerProps) {
     alert(data.message);
   };
 
+  const generateSummary = async (content: string) => {
+    const response = await fetch("http://localhost:3001/api/generate/summary", {
+      method: "POST",
+      body: JSON.stringify({ content }),
+    });
+
+    const data = await response.json();
+    return data.summary;
+  };
+
   const handleFolderSelect = async (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
 
     const formData = new FormData();
     const fileTree: string[] = [];
+    const summaries: string[] = [];
 
     const root: FolderNode = {
       type: "folder",
@@ -57,7 +68,9 @@ export default function FolderPicker({ onDirectoryChange }: FolderPickerProps) {
       const ext = file.name.split(".").pop() || "";
       if (!SUPPORTED_LANGUAGES.includes(ext)) continue;
 
-      fileTree.push("-" + file.webkitRelativePath.toString());
+      fileTree.push(file.webkitRelativePath.toString());
+
+      let fileContent = "";
 
       if (ext === "pdf") {
         try {
@@ -70,16 +83,17 @@ export default function FolderPicker({ onDirectoryChange }: FolderPickerProps) {
             },
           );
 
-          console.log("PDF metni çıkarıldı:", pdfText);
-
+          fileContent = pdfText;
           formData.append("files", textFile);
         } catch (err) {
           console.error("PDF parselleme hatası:", file.name, err);
           continue;
         }
       } else {
+        fileContent = await file.text();
         formData.append("files", file);
       }
+      summaries.push(await generateSummary(fileContent));
 
       const parts = file.webkitRelativePath.split("/");
 
@@ -114,7 +128,7 @@ export default function FolderPicker({ onDirectoryChange }: FolderPickerProps) {
 
     formData.append(
       "fileTree",
-      JSON.stringify(fileTree.join(" \n ") + "### FILE_TREE_END"),
+      JSON.stringify({ paths: fileTree, summaries: summaries }),
     );
 
     onDirectoryChange(root);

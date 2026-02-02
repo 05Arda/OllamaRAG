@@ -4,7 +4,13 @@ import cors from "cors";
 
 import multer from "multer";
 
-import { intentRouter, generate, generateAnswer } from "./services/ollamaChat";
+import {
+  intentRouter,
+  queryExpander,
+  generate,
+  generateAnswer,
+  generateSummary,
+} from "./services/ollamaChat";
 import { searchInEmbeddings } from "./services/search";
 import { startRAG } from "./services/ragManager";
 import type { RawDoc } from "../src/types/types";
@@ -19,6 +25,21 @@ const fileToRawDoc = (file: Express.Multer.File): RawDoc => {
     text: file.buffer.toString("utf-8"),
   };
 };
+
+function buildFileTree(fileTreeData: {
+  paths: string[];
+  summaries: string[];
+}): string {
+  return (
+    fileTreeData.paths
+      .map((path, index) => {
+        const summary =
+          fileTreeData.summaries[index] || "No summary available.";
+        return `-${path}: (${summary})`;
+      })
+      .join("\n") + "\n### FILE_TREE_END"
+  );
+}
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -51,15 +72,18 @@ app.post("/api/chat", async (req: Request, res: Response) => {
     if (response) {
       // Technical Question Handling
       const topK = 5;
-      const results = await searchInEmbeddings(messageText, topK);
+      const expandedQueries = await queryExpander(messageText, fileTree);
+      console.log("🔍 Expanded Search Queries:", expandedQueries);
 
-      if (results.length === 0) {
+      const allResults = await searchInEmbeddings(expandedQueries, topK);
+
+      if (allResults.length === 0) {
         console.log("⚠️ No results found.");
       }
 
       answerStream = await generateAnswer(
         messageText,
-        results.map((r) => r.text).join("\n"),
+        allResults.join("\n"),
         fileTree,
       );
     } else {
@@ -88,7 +112,11 @@ app.post(
 
     try {
       const files = req.files as Express.Multer.File[];
-      fileTree = req.body.fileTree;
+      const fileTreeData = JSON.parse(req.body.fileTree);
+
+      fileTree = buildFileTree(fileTreeData);
+
+      console.log("📂 Enhanced File Tree:\n", fileTree);
 
       if (!files || files.length === 0) {
         return res.status(400).json({ message: "File not uploaded!" });
@@ -97,7 +125,7 @@ app.post(
       console.log(`📥 ${files.length} files received.`);
 
       const docs = files.map(fileToRawDoc);
-      await startRAG(docs);
+      await startRAG(docs, fileTreeData.summaries);
 
       return res.status(200).json({
         status: "success",
@@ -112,6 +140,25 @@ app.post(
           error: err.message || "An unknown error occurred.",
         });
       }
+    }
+  },
+);
+
+app.post(
+  "/api/generate/summary",
+  upload.none(),
+  async (req: Request, res: Response) => {
+    try {
+      const summary = await generateSummary(req.body.content);
+      res.json({
+        status: "success",
+        summary: summary,
+        message: "Summary generated successfully!",
+      });
+    } catch (error: any) {
+      console.error(error);
+      res.status(500).json({ status: "error", message: error.message });
+      throw error;
     }
   },
 );

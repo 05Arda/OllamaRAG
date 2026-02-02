@@ -25,4 +25,5 @@ export interface CodeChunk {
   path: string; // Original file system path
   language: string; // File extension or identified language
   vector?: Vector;
+  metadata?: Record<string, any>; // Additional metadata if needed
 }
