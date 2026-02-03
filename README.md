@@ -1,73 +1,60 @@
-# React + TypeScript + Vite
+Local RAG with LLMs 🚀
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A privacy-focused, fully local Retrieval-Augmented Generation (RAG) system powered by Ollama. Interact with your private documents without ever sending data to the cloud.
 
-Currently, two official plugins are available:
+🌟 Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+This project provides a robust framework for building a local knowledge base using your own documents (PDF, TXT, Markdown). By leveraging Ollama for local LLM inference, it ensures that your sensitive data remains on your machine while providing the power of state-of-the-art language models.
 
-## React Compiler
+✨ Key Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+100% Private & Local: No API keys required. No data leaves your hardware.
 
-## Expanding the ESLint configuration
+Ollama Powered: Seamlessly switch between models like Llama 3, Mistral, Phi-3, or Gemma.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Flexible Document Processing: Supports multiple file formats for ingestion.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Fast Retrieval: Optimized vector similarity search for context-aware responses.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Easy Integration: Designed to be modular and easy to extend.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+🏗️ Architecture
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Ingestion: Load your documents from a local directory.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Chunking: Split text into optimized segments for better context window management.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Embedding: Convert text chunks into high-dimensional vectors using local embedding models.
+
+Vector Store: Store these embeddings in a local vector database.
+
+Querying: When you ask a question, the system finds the most relevant chunks.
+
+Generation: The relevant context + your question are sent to Ollama to generate a precise answer.
+
+🚀 Getting Started
+
+Prerequisites
+
+Ollama: Download and install Ollama
+
+Models: Pull your preferred model (e.g., ollama pull llama3)
+
+
+🗺️ Roadmap
+
+[ ] Support for OCR (Image-to-text) in PDF files.
+
+[ ] Support for Excel and CSV datasets.
+
+[ ] Persistent Chat History.
+
+📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+Built with ❤️ for the open-source community.
